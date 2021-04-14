@@ -10,7 +10,7 @@ app.use(express.static(path.join(__dirname, "../../public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
-app.use("/games", require("./games"));
+app.use("/reviews", require("./games"));
 // Make sure this is right at the end of your server logic!
 // The only thing after this might be a piece of middleware to serve up 500 errors for server problems
 // (However, if you have middleware to serve up 404s, that go would before this as well)

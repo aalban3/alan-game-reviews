@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -13,37 +13,56 @@ import { globalStyles } from "../styles/global";
 import Card from "../shared/card";
 import { MaterialIcons } from "@expo/vector-icons";
 import ReviewForm from "./reviewForm";
+import axios from "axios";
 
 export default function Home({ navigation }) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [reviews, setReviews] = useState([
-    {
-      title: "Zelda: Breath of the wild",
-      rating: 5,
-      body: "Amazing game, I loved it!",
-      id: 1,
-    },
-    {
-      title: "Mario Oddysey",
-      rating: 5,
-      body: "Brings me back to my childhood!",
-      id: 2,
-    },
-    {
-      title: "Call Of Duty: War Zone",
-      rating: 3,
-      body: "Fun but too many loot boxes, I am not rich!",
-      id: 3,
-    },
-  ]);
+  const [reviews, setReviews] = useState([]);
+  // {
+  //   title: "Zelda: Breath of the wild",
+  //   rating: 5,
+  //   body: "Amazing game, I loved it!",
+  //   id: 1,
+  // },
+  // {
+  //   title: "Mario Oddysey",
+  //   rating: 5,
+  //   body: "Brings me back to my childhood!",
+  //   id: 2,
+  // },
+  // {
+  //   title: "Call Of Duty: War Zone",
+  //   rating: 3,
+  //   body: "Fun but too many loot boxes, I am not rich!",
+  //   id: 3,
+  // },
+  const fetchReviews = async () => {
+    try {
+      const { data } = await axios.get("http://192.168.1.154:3000/reviews");
+      setReviews(data);
+    } catch (err) {
+      throw err;
+    }
+  };
 
-  const handleForm = (newReview) => {
-    //navigation.navigate("Reviews");
-    console.log("submitted!");
-    setReviews((prevReview) => {
-      return [...prevReview, newReview];
-    });
-    setModalOpen(false);
+  useEffect(() => {
+    fetchReviews();
+    return () => "App will unmount";
+  }, []);
+
+  const handleForm = async (text) => {
+    try {
+      const { data: newReview } = await axios.post(
+        "http://192.168.1.154:3000/reviews",
+        text
+      );
+      setReviews((prevReview) => {
+        return [...prevReview, newReview];
+      });
+      setModalOpen(false);
+    } catch (err) {
+      throw err;
+    }
   };
   return (
     <View style={globalStyles.container}>

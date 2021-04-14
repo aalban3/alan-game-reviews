@@ -23,9 +23,9 @@ export default function ReviewForm({ handleForm }) {
       <Formik
         initialValues={{ title: "", body: "", rating: "" }}
         validationSchema={reviewSchema}
-        onSubmit={(values, actions) => {
-          actions.resetForm();
-          handleForm({ ...values, id: Math.random().toString() });
+        onSubmit={(values) => {
+          //actions.resetForm();
+          handleForm({ ...values });
         }}
       >
         {(formikProps) => (
