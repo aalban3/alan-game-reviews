@@ -1,10 +1,11 @@
-import React from "react";
-import { StyleSheet, Text, View, Button, TextInput } from "react-native";
+import React, { useState } from "react";
+import { Text, View, Button, TextInput } from "react-native";
 import { globalStyles } from "../styles/global";
 import { Formik } from "formik";
 import * as yup from "yup";
 import FlatButton from "../shared/button";
-
+import { gql, useMutation } from "@apollo/client";
+import { GAMES_QUERY } from "./home";
 const reviewSchema = yup.object({
   title: yup.string().required().min(4),
   body: yup.string().required().min(8),
@@ -17,15 +18,60 @@ const reviewSchema = yup.object({
       (val) => parseInt(val) < 6 && parseInt(val) > 0
     ),
 });
+
+const ADD_GAME = gql`
+  mutation AddGame($title: String!, $body: String!, $rating: String!) {
+    addGame(title: $title, body: $body, rating: $rating) {
+      title
+      body
+      rating
+      id
+    }
+  }
+`;
 export default function ReviewForm({ handleForm }) {
+  //const [addGame, { data }] = useMutation(ADD_GAME);
+  const [addGame] = useMutation(ADD_GAME, {
+    update(cache, { data: { addGame } }) {
+      cache.modify({
+        fields: {
+          games(existingGames = []) {
+            const newGameRef = cache.writeFragment({
+              data: addGame,
+              fragment: gql`
+                fragment NewTodo on Todo {
+                  id
+                  title
+                  body
+                  rating
+                }
+              `,
+            });
+            return [...existingGames, newGameRef];
+          },
+        },
+      });
+    },
+  });
   return (
     <View style={globalStyles.container}>
       <Formik
         initialValues={{ title: "", body: "", rating: "" }}
         validationSchema={reviewSchema}
-        onSubmit={(values) => {
-          //actions.resetForm();
-          handleForm({ ...values });
+        onSubmit={(text) => {
+          addGame({
+            variables: {
+              title: text.title,
+              body: text.body,
+              rating: text.rating,
+            },
+          })
+            .then((res) => {
+              handleForm(res);
+            })
+            .catch((err) => {
+              console.log("ADDING ERROR --->", err);
+            });
         }}
       >
         {(formikProps) => (
@@ -75,5 +121,3 @@ export default function ReviewForm({ handleForm }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({});

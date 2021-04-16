@@ -1,7 +1,9 @@
 const path = require("path");
 const express = require("express");
-const app = express();
+const { graphqlHTTP } = require("express-graphql");
+const schema = require("../schema/schema");
 const morgan = require("morgan");
+const app = express();
 
 // you'll of course want static middleware so your browser can request things like your 'bundle.js'
 app.use(express.static(path.join(__dirname, "../../public")));
@@ -11,6 +13,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use("/reviews", require("./games"));
+
+app.use(
+  "/graphql",
+  graphqlHTTP({
+    schema,
+    graphiql: true,
+  })
+);
 // Make sure this is right at the end of your server logic!
 // The only thing after this might be a piece of middleware to serve up 500 errors for server problems
 // (However, if you have middleware to serve up 404s, that go would before this as well)
